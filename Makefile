@@ -1,0 +1,50 @@
+#
+# © Copyright IBM Corporation 2024. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+RESULTDIR = ./results
+BINDIR =  bin
+BINARY = $(BINDIR)/test  #bin/test
+SOURCEDIRS  =. ./src ./src/distances/base/ ./src/distances/intrinsic/ ./src/distances/optimized/   # all .cc files 
+INCLUDEDIRS =. ./src ./src/distances/base/ ./src/distances/intrinsic/ ./src/distances/optimized/  # all .h files
+
+
+CXX = g++
+OPT = -O3 #optimizatioin level
+DEPFLAGS = -MP -MD # dependency between .cc and .o files
+CXXFLAGS = -g $(foreach D,$(INCLUDEDIRS),-I$(D)) $(OPT) $(DEPFLAGS)
+CCFILES = $(foreach D,$(SOURCEDIRS),$(wildcard $(D)/*.cc))
+OBJFILES = $(patsubst %.cc,%.o,$(CCFILES))
+DEPFILES = $(patsubst %.cc,%.d,$(CCFILES))
+
+
+default: makedir all
+
+all: $(BINARY)
+
+$(BINARY): $(OBJFILES)
+	$(CXX) -o $@ $^
+
+%.o:%.c
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+clean:
+	@rm -rf $(BINDIR) $(OBJFILES) $(DEPFILES) $(RESULTDIR)
+
+-include $(DEPFILES)
+
+.PHONY: makedir all clean
+makedir:
+	@mkdir -p $(BINDIR)
